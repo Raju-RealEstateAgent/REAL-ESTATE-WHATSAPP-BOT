@@ -50,11 +50,10 @@ async function startBot() {
 
         const react = async (emoji) => await sock.sendMessage(sender, { react: { text: emoji, key: msg.key } });
 
-        // --- 1. UNLIMITED HI/HELLO DETECTION (Regex) ---
-        // Ise "hi", "hiiiii", "helloooo", "hey", "h" sab detect hoga
-        const isHiTrigger = /^(h+i+|h+e+l+l+o+|h+e+y+|s+t+a+r+t+|m+e+n+u+|v+i+j+a+y+|\.)/i.test(text);
+        // --- 1. UNLIMITED HI/HELLO DETECTION ---
+        const hiRegex = /^(h+i+|h+e+l+l+o+|h+e+y+|s+t+a+r+t+|m+e+n+u+|v+i+j+a+y+|\.)/i;
         
-        if (isHiTrigger) {
+        if (hiRegex.test(text)) {
             await react("👋");
             const welcomeMenu = `╔════════════════════╗
    🏡 *${BRAND_NAME}* 🏡
@@ -68,7 +67,7 @@ Your trusted partner in premium properties. 🗝️
 𝟙. *Buy Property* ➜ Luxury Options
 𝟚. *Rent Property* ➜ Premium Listings
 𝟛. *Sell Property* ➜ List with Us
-𝟜. *Fill Form* ➜ Requirement Enquiry
+𝟜. *Fill Form* ➜ Property Enquiry
 𝟝. *Contact Agent* ➜ Speak to Us
 
 🌐 *𝐎𝐔𝐑 𝐃𝐈𝐆𝐈𝐓𝐀𝐋 𝐏𝐑𝐄𝐒𝐄𝐍𝐂𝐄*
@@ -84,7 +83,7 @@ _Reply with 'Hi' to see this menu._`;
             return;
         }
 
-        // --- 2. NUMBER RESPONSES ---
+        // --- 2. MENU RESPONSES ---
         if (text === '1') {
             await sock.sendMessage(sender, { text: "🏠 *Buying:* We have premium Flats, Villas, and Plots. \n\n👉 Type *4* to fill the form for best matches!" });
         } 
@@ -95,7 +94,7 @@ _Reply with 'Hi' to see this menu._`;
             await sock.sendMessage(sender, { text: "💰 *Sell:* Want to list your property? \n\n👉 Send photos/location here, or type *5* to speak with us." });
         }
         
-        // --- 3. PROPERTY FORM ---
+        // --- 3. LUXURY PROPERTY FORM ---
         else if (text === '4' || text === 'form') {
             await react("📋");
             const form = `┏━━━━━━━━━━━━━━━━━━━━┓
@@ -128,7 +127,7 @@ _Reply with 'Hi' to see this menu._`;
 📸 *Instagram:* ${INSTAGRAM}` });
         }
 
-        // --- 5. FORM DETECTION & THANK YOU ---
+        // --- 5. FORM DETECTION & BRANDED THANK YOU ---
         const isFormFilled = (text.includes("name") || text.includes("👤")) && (text.includes("budget") || text.includes("💰"));
         
         if (isFormFilled) {
@@ -157,11 +156,12 @@ Details registered at *${BRAND_NAME}*! 🤝
 👤 *Client:* ${pushName}
 📱 *Chat:* wa.me/${sender.split('@')[0]}
 📝 *Details:*
-${text}`;
+${text}
+━━━━━━━━━━━━━━━━━━━━━`;
             await sock.sendMessage(ADMIN_NUMBER + "@s.whatsapp.net", { text: adminAlert });
         }
 
-        // --- 6. FALLBACK ---
+        // --- 6. DEFAULT FALLBACK ---
         else {
             const validNumbers = ['1', '2', '3', '4', '5'];
             if (!validNumbers.includes(text)) {
