@@ -61,8 +61,10 @@ Greetings *${pushName}*! Thank you for contacting us. 😊 🗝️
 ━━━━━━━━━━━━━━━━━━━━━
 
 📸 *Instagram:* https://instagram.com/evijayratna__enterptises
+
 📺 *YouTube:* https://youtube.com/@Vijay_ratna_enterprises
-🌐 *Website:* https://www.vijayratna.com
+
+🌐 *Website:* IN MANTANINCE 😉
 
 📞 *Contact:* +91 98224 34060
 ━━━━━━━━━━━━━━━━━━━━━
@@ -88,8 +90,10 @@ Greetings *${pushName}*! Thank you for contacting us. 😊 🗝️
 🚗 We will arrange a *Free Site Visit*.
 
 📸 *Instagram:* https://instagram.com/evijayratna__enterptises
+
 📺 *YouTube:* https://youtube.com/@Vijay_ratna_enterprises
-🌐 *Website:* https://www.vijayratna.com
+
+🌐 *Website:* IN MANTANINCE 😉
 
 ━━━━━━━━━━━━━━━━━━━━━
 🌟 _Trust. Transparency. Excellence._ 🌟`;
