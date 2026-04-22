@@ -3,18 +3,18 @@ const pino = require('pino');
 const express = require('express');
 const qrcode = require('qrcode-terminal');
 
-// --- ⚙️ CONFIGURATION ---
+// --- ⚙️ CONFIGURATION (Vijay Ratna Enterprises) ---
 const ADMIN_NUMBER = "919822434060"; 
 const BRAND_NAME   = "𝐕𝐢𝐣𝐚𝐲 𝐑𝐚𝐭𝐧𝐚 𝐄𝐧𝐭𝐞𝐫𝐩𝐫𝐢𝐬𝐞𝐬";
 const WEBSITE      = "https://www.vijayratna.com"; 
 const INSTAGRAM    = "https://instagram.com/evijayratna__enterptises";
 const YOUTUBE      = "https://youtube.com/@Vijay_ratna_enterprises";
 
-// --- 🌐 WEB SERVER FOR RENDER ---
+// --- 🌐 WEB SERVER (Permanent Fix for Render) ---
 const app = express();
 const port = process.env.PORT || 10000;
-app.get('/', (req, res) => res.send('🏡 Vijay Ratna Bot is Active! ✅'));
-app.listen(port, '0.0.0.0', () => console.log(`✅ Server Live on Port ${port}`));
+app.get('/', (req, res) => res.send('🏡 Vijay Ratna Bot: Status Online ✅'));
+app.listen(port, '0.0.0.0', () => console.log(`✅ Web Server Active on Port ${port}`));
 
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState('session_data');
@@ -23,7 +23,10 @@ async function startBot() {
         auth: state,
         printQRInTerminal: true,
         logger: pino({ level: 'silent' }),
-        browser: [BRAND_NAME, "Chrome", "1.0.0"]
+        browser: [BRAND_NAME, "Chrome", "1.0.0"],
+        connectTimeoutMs: 60000,
+        defaultQueryTimeoutMs: 0,
+        keepAliveIntervalMs: 10000
     });
 
     sock.ev.on('creds.update', saveCreds);
@@ -31,7 +34,7 @@ async function startBot() {
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
         if (qr) qrcode.generate(qr, { small: true });
-        if (connection === 'open') console.log(`✨ ${BRAND_NAME} ONLINE`);
+        if (connection === 'open') console.log(`✨ ${BRAND_NAME} IS NOW ONLINE`);
         if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             if (shouldReconnect) startBot();
@@ -39,23 +42,24 @@ async function startBot() {
     });
 
     sock.ev.on('messages.upsert', async (m) => {
-        const msg = m.messages[0];
-        if (!msg.message || msg.key.fromMe || msg.key.remoteJid === 'status@broadcast') return;
+        try {
+            const msg = m.messages[0];
+            if (!msg.message || msg.key.fromMe || msg.key.remoteJid === 'status@broadcast') return;
 
-        const sender = msg.key.remoteJid;
-        const pushName = msg.pushName || "Guest";
-        const text = (msg.message.conversation || 
-                      msg.message.extendedTextMessage?.text || 
-                      "").toLowerCase().trim();
+            const sender = msg.key.remoteJid;
+            const pushName = msg.pushName || "Guest";
+            const text = (msg.message.conversation || 
+                          msg.message.extendedTextMessage?.text || 
+                          "").toLowerCase().trim();
 
-        const react = async (emoji) => await sock.sendMessage(sender, { react: { text: emoji, key: msg.key } });
+            const react = async (emoji) => await sock.sendMessage(sender, { react: { text: emoji, key: msg.key } });
 
-        // --- 1. UNLIMITED HI/HELLO DETECTION ---
-        const hiRegex = /^(h+i+|h+e+l+l+o+|h+e+y+|s+t+a+r+t+|m+e+n+u+|v+i+j+a+y+|\.)/i;
-        
-        if (hiRegex.test(text)) {
-            await react("👋");
-            const welcomeMenu = `╔════════════════════╗
+            // --- UNLIMITED HI/HELLO DETECTION ---
+            const hiRegex = /^(h+i+|h+e+l+l+o+|h+e+y+|s+t+a+r+t+|m+e+n+u+|v+i+j+a+y+|\.|\!)/i;
+            
+            if (hiRegex.test(text)) {
+                await react("👋");
+                const welcomeMenu = `╔════════════════════╗
    🏡 *${BRAND_NAME}* 🏡
 ╚════════════════════╝
 
@@ -78,26 +82,23 @@ Your trusted partner in premium properties. 🗝️
 
 ━━━━━━━━━━━━━━━━━━━━━
 _Reply with 'Hi' to see this menu._`;
+                await sock.sendMessage(sender, { text: welcomeMenu });
+                return;
+            }
 
-            await sock.sendMessage(sender, { text: welcomeMenu });
-            return;
-        }
-
-        // --- 2. MENU RESPONSES ---
-        if (text === '1') {
-            await sock.sendMessage(sender, { text: "🏠 *Buying:* We have premium Flats, Villas, and Plots. \n\n👉 Type *4* to fill the form for best matches!" });
-        } 
-        else if (text === '2') {
-            await sock.sendMessage(sender, { text: "🔑 *Rent:* Searching for premium rentals? \n\n👉 Type *4* to share your requirements via our form." });
-        }
-        else if (text === '3') {
-            await sock.sendMessage(sender, { text: "💰 *Sell:* Want to list your property? \n\n👉 Send photos/location here, or type *5* to speak with us." });
-        }
-        
-        // --- 3. LUXURY PROPERTY FORM ---
-        else if (text === '4' || text === 'form') {
-            await react("📋");
-            const form = `┏━━━━━━━━━━━━━━━━━━━━┓
+            // --- MENU RESPONSES (Numbers 1-5) ---
+            if (text === '1') {
+                await sock.sendMessage(sender, { text: "🏠 *Buying:* We have premium Flats, Villas, and Plots. \n\n👉 Type *4* to fill the form for best matches!" });
+            } 
+            else if (text === '2') {
+                await sock.sendMessage(sender, { text: "🔑 *Rent:* Searching for premium rentals? \n\n👉 Type *4* to share your requirements via our form." });
+            }
+            else if (text === '3') {
+                await sock.sendMessage(sender, { text: "💰 *Sell:* Want to list your property? \n\n👉 Send photos/location here, or type *5* to speak with us." });
+            }
+            else if (text === '4' || text === 'form') {
+                await react("📋");
+                const form = `┏━━━━━━━━━━━━━━━━━━━━┓
      📋 *𝐏𝐑𝐎𝐏𝐄𝐑𝐓𝐘 𝐅𝐎𝐑𝐌*
 ┗━━━━━━━━━━━━━━━━━━━━┛
 *Please Copy, Paste & Fill:*
@@ -113,26 +114,18 @@ _Reply with 'Hi' to see this menu._`;
 🌐 *Web:* ${WEBSITE}
 📸 *Insta:* ${INSTAGRAM}
 ━━━━━━━━━━━━━━━━━━━━━`;
-            await sock.sendMessage(sender, { text: form });
-        }
+                await sock.sendMessage(sender, { text: form });
+            }
+            else if (text === '5' || text === 'contact') {
+                await react("📞");
+                await sock.sendMessage(sender, { text: `📞 *𝐎𝐅𝐅𝐈𝐂𝐈𝐀𝐋 𝐂𝐎𝐍𝐓𝐀𝐂𝐓* \n━━━━━━━━━━━━━━━━━━━━━\n👤 *Admin:* ${BRAND_NAME}\n📱 *WhatsApp:* +${ADMIN_NUMBER}\n🌐 *Web:* ${WEBSITE}\n📸 *Insta:* ${INSTAGRAM}` });
+            }
 
-        // --- 4. CONTACT ---
-        else if (text === '5' || text === 'contact') {
-            await react("📞");
-            await sock.sendMessage(sender, { text: `📞 *𝐎𝐅𝐅𝐈𝐂𝐈𝐀𝐋 𝐂𝐎𝐍𝐓𝐀𝐂𝐓* 
-━━━━━━━━━━━━━━━━━━━━━
-👤 *Admin:* ${BRAND_NAME}
-📱 *WhatsApp:* +${ADMIN_NUMBER}
-🌐 *Website:* ${WEBSITE}
-📸 *Instagram:* ${INSTAGRAM}` });
-        }
-
-        // --- 5. FORM DETECTION & BRANDED THANK YOU ---
-        const isFormFilled = (text.includes("name") || text.includes("👤")) && (text.includes("budget") || text.includes("💰"));
-        
-        if (isFormFilled) {
-            await react("✅");
-            const thanks = `🎊 *𝐒𝐔𝐂𝐂𝐄𝐒𝐒, ${pushName.toUpperCase()}!* 🎊
+            // --- LEAD DETECTION & THANK YOU ---
+            const isFormFilled = (text.includes("name") || text.includes("👤")) && (text.includes("budget") || text.includes("💰"));
+            if (isFormFilled) {
+                await react("✅");
+                const thanks = `🎊 *𝐒𝐔𝐂𝐂𝐄𝐒𝐒, ${pushName.toUpperCase()}!* 🎊
 ━━━━━━━━━━━━━━━━━━━━━
 Details registered at *${BRAND_NAME}*! 🤝
 
@@ -148,28 +141,21 @@ Details registered at *${BRAND_NAME}*! 🤝
 
 ━━━━━━━━━━━━━━━━━━━━━
 *Contact:* +${ADMIN_NUMBER}`;
-            await sock.sendMessage(sender, { text: thanks });
+                await sock.sendMessage(sender, { text: thanks });
 
-            // Forward Lead to Admin
-            const adminAlert = `🔥 *𝐍𝐄𝐖 𝐋𝐄𝐀𝐃* (Vijay Ratna) 🔥
+                // Lead Forwarding to Admin
+                const adminAlert = `🔥 *𝐍𝐄𝐖 𝐋𝐄𝐀𝐃* (Vijay Ratna) 🔥
 ━━━━━━━━━━━━━━━━━━━━━
 👤 *Client:* ${pushName}
 📱 *Chat:* wa.me/${sender.split('@')[0]}
 📝 *Details:*
 ${text}
 ━━━━━━━━━━━━━━━━━━━━━`;
-            await sock.sendMessage(ADMIN_NUMBER + "@s.whatsapp.net", { text: adminAlert });
-        }
-
-        // --- 6. DEFAULT FALLBACK ---
-        else {
-            const validNumbers = ['1', '2', '3', '4', '5'];
-            if (!validNumbers.includes(text)) {
-                await react("🙂");
-                await sock.sendMessage(sender, { text: "Please type *'Hi'* to explore *${BRAND_NAME}* property services. 🏡✨" });
+                await sock.sendMessage(ADMIN_NUMBER + "@s.whatsapp.net", { text: adminAlert });
             }
-        }
+
+        } catch (err) { console.log("Msg Error:", err); }
     });
 }
 
-startBot().catch(err => console.log("Error: " + err));
+startBot().catch(err => console.log("Start Error:", err));
