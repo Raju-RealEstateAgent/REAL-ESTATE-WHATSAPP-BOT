@@ -10,8 +10,7 @@ const qrcode = require('qrcode-terminal');
 // ==========================================
 // ⚙️ CONFIGURATION (Apni Details Yahan Dalein)
 // ==========================================
-const ADMIN_NUMBER = "919822434060,
-                      919561859020"; 
+const ADMIN_NUMBER = "919822434060"; 
 const BRAND_NAME   = "Vijay Ratna Enterprises";
 const WEBSITE      = "IN PROSSES";
 const INSTAGRAM    = "https://instagram.com/@vijayratna__enterptises";
