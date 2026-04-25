@@ -98,16 +98,21 @@ Greetings *${pushName}*! Thank you for contacting us. 😊 🗝️
 ━━━━━━━━━━━━━━━━━━━━━
 🌟 _Trust. Transparency. Excellence._ 🌟`;
 
-            await sock.sendMessage(sender, { text: thankYouMessage });
+    await sock.sendMessage(sender, { text: thankYouMessage });
 
-            // --- LEAD FORWARDING TO ADMIN ---
-            const adminMsg = `🔥 *NEW LEAD ALERT* 🔥
+    await sock.sendMessage(sender, {
+        image: { url: "<a href="https://i.ibb.co/GfTwgYVD/Chat-GPT-Image-Apr-25-2026-10-26-40-PM.png"},
+        caption: "🏡 Vijay Ratna Enterprises"
+    });
+
+    const adminMsg = `🔥 *NEW LEAD ALERT* 🔥
 👤 *Client:* ${pushName}
 📱 *Chat:* wa.me/${sender.split('@')[0]}
 📝 *Details:*
 ${text}`;
-            await sock.sendMessage("919822434060@s.whatsapp.net", { text: adminMsg });
-        }
+
+    await sock.sendMessage("919822434060@s.whatsapp.net", { text: adminMsg });
+}
     });
 }
 
