@@ -67,6 +67,7 @@ Greetings *${pushName}*! Thank you for contacting us. 😊 🗝️
 🌐 *Website:* IN MANTANINCE 😉
 
 🤵 *Brokerage Applicabel* 👍
+
 📞 *Contact:* +91 98224 34060
 ━━━━━━━━━━━━━━━━━━━━━
 📌 _Our team will contact you shortly!_`;
@@ -95,6 +96,8 @@ Greetings *${pushName}*! Thank you for contacting us. 😊 🗝️
 📺 *YouTube:* https://youtube.com/@Vijay_ratna_enterprises
 
 🌐 *Website:* IN MANTANINCE 😉
+
+🤵 *Brokerage Applicabel* 👍
 
 ━━━━━━━━━━━━━━━━━━━━━
 🌟 _Trust. Transparency. Excellence._ 🌟`;
