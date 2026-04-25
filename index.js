@@ -101,7 +101,7 @@ Greetings *${pushName}*! Thank you for contacting us. 😊 🗝️
     await sock.sendMessage(sender, { text: thankYouMessage });
 
    await sock.sendMessage(sender, {
-    image: { url: "https://i.ibb.co/GfTwgYVD/Chat-GPT-Image-Apr-25-2026-10-26-40-PM.png" },
+    image: { url: "https://i.ibb.co/KzcnVvgZ/Picsart-26-04-25-21-45-06-694.jpg" },
     caption: "🏡 Vijay Ratna Enterprises"
 });
 
