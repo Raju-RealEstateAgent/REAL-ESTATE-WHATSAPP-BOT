@@ -100,10 +100,10 @@ Greetings *${pushName}*! Thank you for contacting us. 😊 🗝️
 
     await sock.sendMessage(sender, { text: thankYouMessage });
 
-    await sock.sendMessage(sender, {
-        image: { url: "<a href="https://i.ibb.co/GfTwgYVD/Chat-GPT-Image-Apr-25-2026-10-26-40-PM.png"},
-        caption: "🏡 Vijay Ratna Enterprises"
-    });
+   await sock.sendMessage(sender, {
+    image: { url: "https://i.ibb.co/GfTwgYVD/Chat-GPT-Image-Apr-25-2026-10-26-40-PM.png" },
+    caption: "🏡 Vijay Ratna Enterprises"
+});
 
     const adminMsg = `🔥 *NEW LEAD ALERT* 🔥
 👤 *Client:* ${pushName}
