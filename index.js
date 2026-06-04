@@ -64,7 +64,7 @@ Greetings *${pushName}*! Thank you for contacting us. 😊 🗝️
 
 📺 *YouTube:* https://youtube.com/@Vijay_ratna_enterprises
 
-🌐 *Website:* IN MANTANINCE 😉
+🌐 *Website:* https://vijayratnaenterprises.great-site.net/login
 
 🤵 *Brokerage Applicabel* 👍
 
@@ -95,7 +95,8 @@ Greetings *${pushName}*! Thank you for contacting us. 😊 🗝️
 
 📺 *YouTube:* https://youtube.com/@Vijay_ratna_enterprises
 
-🌐 *Website:* IN MANTANINCE 😉
+🌐 *Website:* https://vijayratnaenterprises.great-site.net/login 
+*Wesite is live ✔*
 
 🤵 *Brokerage Applicabel* 👍
 
