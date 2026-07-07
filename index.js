@@ -151,10 +151,32 @@ Greetings *${pushName}*! Thank you for contacting us. 😊 🗝️
                 raw: originalText.replace(/\n/g, " ")
             };
 
-            // If some fields couldn't be extracted via standard format, maybe it's just raw text
-            if (parsedData.budget === "Not Specified" && originalText.toLowerCase().includes('k')) {
-                // If it's totally unstructured text, just capture the whole text
-                parsedData.budget = "See raw message";
+            // If some fields couldn't be extracted via standard format, fallback to smart line-by-line guessing
+            let noLabelsUsed = (parsedData.budget === "Not Specified") && 
+                               (parsedData.type === "Not Specified") && 
+                               (parsedData.location === "Not Specified");
+
+            if (noLabelsUsed) {
+                let lines = originalText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                if (lines.length >= 3) {
+                    // Try to guess from raw lines
+                    parsedData.name = lines[0] || pushName;
+                    parsedData.budget = lines.find(l => /\d+\s*(k|lac|lakh|cr|crore)/i.test(l)) || lines[1] || "Not Specified";
+                    parsedData.type = lines.filter(l => /flat|falt|villa|plot|bhk|parking|apt/i.test(l)).join(', ') || lines[2] || "Not Specified";
+                    parsedData.purpose = lines.find(l => /buy|rent|invest/i.test(l)) || lines[lines.length - 1] || "Not Specified";
+                    
+                    // Guess location (a word that isn't the name, budget, type, or purpose)
+                    parsedData.location = lines.find(l => 
+                        l !== lines[0] && 
+                        !/\d/.test(l) && 
+                        !/buy|rent|invest|flat|falt|villa|plot|bhk/i.test(l)
+                    ) || lines[3] || "Not Specified";
+                } else if (originalText.toLowerCase().includes('k')) {
+                    parsedData.budget = "See raw message";
+                    parsedData.type = "See raw message";
+                    parsedData.location = "See raw message";
+                    parsedData.purpose = "See raw message";
+                }
             }
 
             const confirmMsg = `📋 *Please verify your details:*
