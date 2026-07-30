@@ -91,7 +91,6 @@ async function startBot() {
 
             const sender = msg.key.remoteJid;
             const pushName = msg.pushName || "Valued Client";
-            const messageType = Object.keys(msg.message)[0];
             
             let text = msg.message?.conversation || 
                        msg.message?.extendedTextMessage?.text || 
@@ -100,6 +99,8 @@ async function startBot() {
                        "";
             
             text = text.toLowerCase().trim();
+            console.log(`[DEBUG] Received from ${sender}: ${JSON.stringify(msg.message)} -> Extracted text: "${text}"`);
+            
             if (!text) return; // Ignore non-text messages
 
             // --- TRIGGER DETECTION ---
