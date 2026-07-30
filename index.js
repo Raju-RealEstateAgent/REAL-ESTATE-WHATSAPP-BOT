@@ -1,4 +1,4 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const express = require('express');
 const qrcode = require('qrcode-terminal');
@@ -15,16 +15,19 @@ const userStates = {};
 const adminNumber = "919822434060@s.whatsapp.net"; // Format with @s.whatsapp.net
 
 async function startBot() {
+    console.log("[BOT] Fetching latest WhatsApp version...");
+    const { version, isLatest } = await fetchLatestBaileysVersion();
+    console.log(`[BOT] Using WA v${version.join('.')}, isLatest: ${isLatest}`);
+    
     console.log("[BOT] Starting authentication...");
     const { state, saveCreds } = await useMultiFileAuthState('session_data');
 
     const sock = makeWASocket({
+        version,
         auth: state,
         printQRInTerminal: true, 
         logger: pino({ level: 'silent' }),
-        browser: Browsers.macOS('Desktop'),
-        syncFullHistory: false,
-        generateHighQualityLinkPreviews: true
+        browser: ["Vijay Ratna", "Chrome", "1.0.0"]
     });
 
     sock.ev.on('connection.update', (update) => {
