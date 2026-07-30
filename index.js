@@ -10,6 +10,18 @@ const app = express();
 const port = process.env.PORT || 10000;
 app.get('/', (req, res) => res.status(200).send('⭐ Vijay Ratna Bot is Active!'));
 app.get('/ping', (req, res) => res.status(200).json({ status: 'ok', time: new Date().toISOString() }));
+app.get('/reset-session', async (req, res) => {
+    try {
+        const uri = process.env.MONGODB_URI;
+        if (!uri) return res.status(500).send("No MONGODB_URI found");
+        const client = new MongoClient(uri);
+        await client.connect();
+        await client.db("whatsapp_bot").collection("auth_info").drop();
+        res.status(200).send("✅ Session reset successfully! Please restart the bot in Render to get a new QR code.");
+    } catch (err) {
+        res.status(500).send("Session may already be clear or an error occurred: " + err.message);
+    }
+});
 app.listen(port, '0.0.0.0', () => console.log(`[SERVER] Express server listening on port ${port}`));
 
 // --- USER SESSION STATE ---
