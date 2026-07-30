@@ -81,9 +81,11 @@ async function startBot() {
             const pushName = msg.pushName || "Valued Client";
             const messageType = Object.keys(msg.message)[0];
             
-            let text = "";
-            if (messageType === 'conversation') text = msg.message.conversation;
-            else if (messageType === 'extendedTextMessage') text = msg.message.extendedTextMessage.text;
+            let text = msg.message?.conversation || 
+                       msg.message?.extendedTextMessage?.text || 
+                       msg.message?.ephemeralMessage?.message?.extendedTextMessage?.text || 
+                       msg.message?.ephemeralMessage?.message?.conversation || 
+                       "";
             
             text = text.toLowerCase().trim();
             if (!text) return; // Ignore non-text messages
