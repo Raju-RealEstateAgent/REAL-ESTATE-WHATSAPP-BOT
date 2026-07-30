@@ -1,5 +1,7 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, DisconnectReason, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
 const pino = require('pino');
+const { MongoClient } = require('mongodb');
+const useMongoDBAuthState = require('./mongoAuthState');
 const express = require('express');
 const qrcode = require('qrcode-terminal');
 
@@ -20,7 +22,18 @@ async function startBot() {
     console.log(`[BOT] Using WA v${version.join('.')}, isLatest: ${isLatest}`);
     
     console.log("[BOT] Starting authentication...");
-    const { state, saveCreds } = await useMultiFileAuthState('session_data');
+    
+    // Connect to MongoDB
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+        console.error("MONGODB_URI is missing. Please set it in environment variables.");
+        process.exit(1);
+    }
+    const mongoClient = new MongoClient(uri);
+    await mongoClient.connect();
+    const collection = mongoClient.db("whatsapp_bot").collection("auth_info");
+    
+    const { state, saveCreds } = await useMongoDBAuthState(collection);
 
     const sock = makeWASocket({
         version,
