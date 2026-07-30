@@ -49,6 +49,8 @@ async function startBot() {
         if (qr) {
             console.log("[BOT] Please scan the QR code above to link your WhatsApp.");
             qrcode.generate(qr, { small: true });
+            console.log("\n[BOT] ⚠️ If the QR code above is broken or too big to scan, click this link to view it:");
+            console.log("https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=" + encodeURIComponent(qr));
         }
         
         if (connection === 'open') {
