@@ -1,4 +1,4 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const express = require('express');
 const qrcode = require('qrcode-terminal');
@@ -7,93 +7,126 @@ const qrcode = require('qrcode-terminal');
 const app = express();
 const port = process.env.PORT || 10000;
 app.get('/', (req, res) => res.status(200).send('⭐ Vijay Ratna Bot is Active!'));
-app.get('/ping', (req, res) => res.status(200).json({ status: 'ok' }));
-app.listen(port, '0.0.0.0', () => console.log(`Server listening on port ${port}`));
+app.get('/ping', (req, res) => res.status(200).json({ status: 'ok', time: new Date().toISOString() }));
+app.listen(port, '0.0.0.0', () => console.log(`[SERVER] Express server listening on port ${port}`));
 
 // --- USER SESSION STATE ---
 const userStates = {};
+const adminNumber = "919822434060@s.whatsapp.net"; // Format with @s.whatsapp.net
 
 async function startBot() {
+    console.log("[BOT] Starting authentication...");
     const { state, saveCreds } = await useMultiFileAuthState('session_data');
 
     const sock = makeWASocket({
         auth: state,
         printQRInTerminal: true, 
         logger: pino({ level: 'silent' }),
-        browser: ["Vijay Ratna Enterprises", "Chrome", "1.0.0"]
+        browser: Browsers.macOS('Desktop'),
+        syncFullHistory: false,
+        generateHighQualityLinkPreviews: true
     });
 
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
-        if (qr) qrcode.generate(qr, { small: true });
-        if (connection === 'open') {
-            console.log('✅ VIJAY RATNA BOT IS LIVE ON RENDER!');
+        
+        if (qr) {
+            console.log("[BOT] Please scan the QR code above to link your WhatsApp.");
+            qrcode.generate(qr, { small: true });
         }
+        
+        if (connection === 'open') {
+            console.log('✅ [BOT] VIJAY RATNA BOT IS LIVE AND CONNECTED!');
+        }
+        
         if (connection === 'close') {
-            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            if (shouldReconnect) startBot();
+            const statusCode = lastDisconnect?.error?.output?.statusCode;
+            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+            console.log(`[BOT] Connection closed. Reason code: ${statusCode}. Reconnecting: ${shouldReconnect}`);
+            
+            if (shouldReconnect) {
+                setTimeout(startBot, 5000); // Reconnect with a delay to prevent spam
+            } else {
+                console.log("[BOT] Logged out. Please delete the 'session_data' folder and scan QR again.");
+            }
         }
     });
 
     sock.ev.on('creds.update', saveCreds);
 
     sock.ev.on('messages.upsert', async (m) => {
-        const msg = m.messages[0];
-        if (!msg.message || msg.key.fromMe || msg.key.remoteJid === 'status@broadcast') return;
+        try {
+            const msg = m.messages[0];
+            if (!msg.message || msg.key.fromMe || msg.key.remoteJid === 'status@broadcast') return;
 
-        const sender = msg.key.remoteJid;
-        const pushName = msg.pushName || "Guest";
-        const text = (msg.message.conversation || msg.message.extendedTextMessage?.text || "").toLowerCase().trim();
+            const sender = msg.key.remoteJid;
+            const pushName = msg.pushName || "Valued Client";
+            const messageType = Object.keys(msg.message)[0];
+            
+            let text = "";
+            if (messageType === 'conversation') text = msg.message.conversation;
+            else if (messageType === 'extendedTextMessage') text = msg.message.extendedTextMessage.text;
+            
+            text = text.toLowerCase().trim();
+            if (!text) return; // Ignore non-text messages
 
-        // --- TRIGGER DETECTION (Detects Hi, Hello, Hey, etc. multiple times) ---
-        const hiTrigger = /^(h+i+|h+e+l+l+o+|h+e+y+|s+t+a+r+t+|m+e+n+u+|\.)/i.test(text);
+            // --- TRIGGER DETECTION ---
+            const greetings = ["hi", "hello", "hey", "start", "menu", "help", "info", "."];
+            const isGreeting = greetings.some(g => text.startsWith(g));
 
-        if (hiTrigger) {
-            const welcomeForm = `🏡 *𝐕𝐢𝐣𝐚𝐲 𝐑𝐚𝐭𝐧𝐚 𝐄𝐧𝐭𝐞𝐫𝐩𝐫𝐢𝐬𝐞𝐬* 🏡
-✨ _Find Your Dream Home_ ✨
+            if (isGreeting) {
+                const welcomeForm = `🏡 *𝐕𝐢𝐣𝐚𝐲 𝐑𝐚𝐭𝐧𝐚 𝐄𝐧𝐭𝐞𝐫𝐩𝐫𝐢𝐬𝐞𝐬* 🏡
+✨ _Find Your Dream Home With Us_ ✨
 ━━━━━━━━━━━━━━━━━━━━━
 
-Greetings *${pushName}*! Thank you for contacting us. 😊 🗝️
+Greetings *${pushName}*! Thank you for choosing us. 😊 🗝️
+
+To serve you better, please reply with your requirements in the following format:
 
 📋 *𝐏𝐑𝐎𝐏𝐄𝐑𝐓𝐘 𝐄𝐍𝐐𝐔𝐈𝐑𝐘 𝐅𝐎𝐑𝐌*
 ━━━━━━━━━━━━━━━━━━━━━
-👤 *Full Name:*
-💰 *Budget Range:*
-🏗️ *Property Type:* (Flat / Villa / Plot)
-📍 *Location:*
+👤 *Name:* (Your full name)
+💰 *Budget:* (e.g., 50 Lacs, 1 Cr)
+🏗️ *Type:* (Flat / Villa / Plot)
+📍 *Location:* (Preferred area)
 🎯 *Purpose:* (Buy / Rent / Invest)
 ━━━━━━━━━━━━━━━━━━━━━
 
+*Connect with us:*
 📸 *Instagram:* https://instagram.com/evijayratna__enterptises
-
 📺 *YouTube:* https://youtube.com/@Vijay_ratna_enterprises
-
 🌐 *Website:* https://vijayratnaenterprises.great-site.net/login
 
 🤵 *Brokerage Applicable* 👍
-
 📞 *Contact:* +91 98224 34060
 ━━━━━━━━━━━━━━━━━━━━━
-📌 _Our team will contact you shortly!_`;
+📌 _Simply reply to this message with your details, and our team will contact you shortly!_`;
 
-            await sock.sendMessage(sender, { text: welcomeForm });
-            return;
-        }
+                await sock.sendMessage(sender, { text: welcomeForm });
+                return;
+            }
 
-        // --- HANDLE WAITING CONFIRMATION ---
-        if (userStates[sender] && userStates[sender].state === 'WAITING_CONFIRMATION') {
-            if (text === 'yes' || text === 'y' || text === 'haan' || text === 'yes correct' || text === 'yep' || text === 'ok' || text === 'ok correct') {
-                const data = userStates[sender].data;
-                const thankYouMessage = `🎊 *𝐓𝐇𝐀𝐍𝐊 𝐘𝐎𝐔 𝐅𝐎𝐑 𝐓𝐇𝐄 𝐃𝐄𝐓𝐀𝐈𝐋𝐒!* 🎊
+            // --- HANDLE WAITING CONFIRMATION ---
+            if (userStates[sender] && userStates[sender].state === 'WAITING_CONFIRMATION') {
+                const confirmWords = ['yes', 'y', 'haan', 'correct', 'yep', 'ok', 'okay', 'perfect', 'done'];
+                const rejectWords = ['no', 'n', 'wrong', 'incorrect', 'edit', 'change'];
+                
+                const isConfirm = confirmWords.some(w => text === w || text.includes(w));
+                const isReject = rejectWords.some(w => text === w || text.includes(w));
 
-✅ *Details Received Successfully!* 🙏
-*Vijay Ratna Enterprises* has saved your requirements.
+                if (isConfirm && !isReject) {
+                    const data = userStates[sender].data;
+                    const thankYouMessage = `🎊 *𝐓𝐇𝐀𝐍𝐊 𝐘𝐎𝐔 𝐅𝐎𝐑 𝐘𝐎𝐔𝐑 𝐑𝐄𝐐𝐔𝐈𝐑𝐄𝐌𝐄𝐍𝐓𝐒!* 🎊
+
+✅ *Details Successfully Registered!* 🙏
+*Vijay Ratna Enterprises* has saved your profile.
 
 🚀 *WHAT HAPPENS NEXT?*
-📞 You will receive a call within *4 Hours*.
-📂 Exclusive property *PDFs* will be sent here.
-🚗 We will arrange a *Free Site Visit*.
+📞 Our executive will call you within *4 Hours*.
+📂 Exclusive property *Brochures/PDFs* will be sent here.
+🚗 We will arrange a *Free Site Visit* for you.
 
+*Stay Connected:*
 📸 *Instagram:* https://instagram.com/evijayratna__enterptises
 📺 *YouTube:* https://youtube.com/@Vijay_ratna_enterprises
 🌐 *Website:* https://vijayratnaenterprises.great-site.net/login 
@@ -102,99 +135,106 @@ Greetings *${pushName}*! Thank you for contacting us. 😊 🗝️
 ━━━━━━━━━━━━━━━━━━━━━
 🌟 _Trust. Transparency. Excellence._ 🌟`;
 
-                await sock.sendMessage(sender, { text: thankYouMessage });
-                await sock.sendMessage(sender, {
-                    image: { url: "https://i.ibb.co/KzcnVvgZ/Picsart-26-04-25-21-45-06-694.jpg" },
-                    caption: "🏡 Vijay Ratna Enterprises"
-                });
+                    await sock.sendMessage(sender, { text: thankYouMessage });
+                    await sock.sendMessage(sender, {
+                        image: { url: "https://i.ibb.co/KzcnVvgZ/Picsart-26-04-25-21-45-06-694.jpg" },
+                        caption: "🏡 *Vijay Ratna Enterprises* - Your Trusted Real Estate Partner"
+                    });
 
-                const adminMsg = `🔥 *NEW LEAD ALERT* 🔥
-👤 *Client:* ${pushName}
-📱 *Chat:* wa.me/${sender.split('@')[0]}
-📝 *Details:*
+                    const adminMsg = `🔥 *NEW LEAD ALERT* 🔥
+━━━━━━━━━━━━━━━━━━
+👤 *Client Name:* ${pushName}
+📱 *Chat Link:* wa.me/${sender.split('@')[0]}
+━━━━━━━━━━━━━━━━━━
+📋 *REQUIREMENTS:*
 👤 Name: ${data.name}
 💰 Budget: ${data.budget}
 🏗️ Type: ${data.type}
 📍 Location: ${data.location}
 🎯 Purpose: ${data.purpose}
-(Raw Msg: ${data.raw})`;
 
-                await sock.sendMessage("919822434060@s.whatsapp.net", { text: adminMsg });
-                delete userStates[sender]; // clear state
-                return;
-            } else if (text === 'no' || text === 'n' || text === 'wrong') {
-                delete userStates[sender];
-                await sock.sendMessage(sender, { text: "No worries! Please fill out the form again with your correct details." });
-                return;
-            }
-        }
+💬 *Raw Message:* 
+_${data.raw}_
+━━━━━━━━━━━━━━━━━━`;
 
-        // --- DETAILS DETECTION & CONFIRMATION ---
-        // If the user sends a message that looks like the form, or contains details
-        const hasDetails = text.includes('name:') || text.includes('budget:') || (text.includes('bhk') && text.includes('k'));
-        const originalText = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
-
-        if (hasDetails && (!userStates[sender] || userStates[sender].state !== 'WAITING_CONFIRMATION')) {
-            
-            // Basic parsing logic
-            const extract = (regex) => {
-                const match = originalText.match(regex);
-                return match ? match[1].trim() : "Not Specified";
-            };
-
-            const parsedData = {
-                name: extract(/name[:\-\s]+([^\n]*)/i) !== "Not Specified" ? extract(/name[:\-\s]+([^\n]*)/i) : pushName,
-                budget: extract(/budget[:\-\s]+([^\n]*)/i),
-                type: extract(/(?:property type|type)[:\-\s]+([^\n]*)/i),
-                location: extract(/location[:\-\s]+([^\n]*)/i),
-                purpose: extract(/purpose[:\-\s]+([^\n]*)/i),
-                raw: originalText.replace(/\n/g, " ")
-            };
-
-            // If some fields couldn't be extracted via standard format, fallback to smart line-by-line guessing
-            let noLabelsUsed = (parsedData.budget === "Not Specified") && 
-                               (parsedData.type === "Not Specified") && 
-                               (parsedData.location === "Not Specified");
-
-            if (noLabelsUsed) {
-                let lines = originalText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                if (lines.length >= 3) {
-                    // Try to guess from raw lines
-                    parsedData.name = lines[0] || pushName;
-                    parsedData.budget = lines.find(l => /\d+\s*(k|lac|lakh|cr|crore)/i.test(l)) || lines[1] || "Not Specified";
-                    parsedData.type = lines.filter(l => /flat|falt|villa|plot|bhk|parking|apt/i.test(l)).join(', ') || lines[2] || "Not Specified";
-                    parsedData.purpose = lines.find(l => /buy|rent|invest/i.test(l)) || lines[lines.length - 1] || "Not Specified";
-                    
-                    // Guess location (a word that isn't the name, budget, type, or purpose)
-                    parsedData.location = lines.find(l => 
-                        l !== lines[0] && 
-                        !/\d/.test(l) && 
-                        !/buy|rent|invest|flat|falt|villa|plot|bhk/i.test(l)
-                    ) || lines[3] || "Not Specified";
-                } else if (originalText.toLowerCase().includes('k')) {
-                    parsedData.budget = "See raw message";
-                    parsedData.type = "See raw message";
-                    parsedData.location = "See raw message";
-                    parsedData.purpose = "See raw message";
+                    await sock.sendMessage(adminNumber, { text: adminMsg });
+                    delete userStates[sender];
+                    return;
+                } else if (isReject) {
+                    delete userStates[sender];
+                    await sock.sendMessage(sender, { text: "No worries! Please reply with your correct details in the form format again." });
+                    return;
                 }
             }
 
-            const confirmMsg = `📋 *Please verify your details:*
+            // --- DETAILS DETECTION & CONFIRMATION ---
+            const originalText = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
+            const lowerOriginalText = originalText.toLowerCase();
+            
+            // Check if message has form keywords or looks like a requirement
+            const formKeywords = ['name:', 'budget:', 'type:', 'location:', 'purpose:', 'bhk', 'lacs', 'crore', 'cr', 'lakh', 'villa', 'plot', 'flat'];
+            const hasDetails = formKeywords.some(keyword => lowerOriginalText.includes(keyword));
+
+            if (hasDetails && (!userStates[sender] || userStates[sender].state !== 'WAITING_CONFIRMATION')) {
+                
+                const extract = (regex) => {
+                    const match = originalText.match(regex);
+                    return match ? match[1].trim() : "Not Specified";
+                };
+
+                const parsedData = {
+                    name: extract(/name[:\-\s]+([^\n]*)/i) !== "Not Specified" ? extract(/name[:\-\s]+([^\n]*)/i) : pushName,
+                    budget: extract(/budget[:\-\s]+([^\n]*)/i),
+                    type: extract(/(?:property type|type)[:\-\s]+([^\n]*)/i),
+                    location: extract(/location[:\-\s]+([^\n]*)/i),
+                    purpose: extract(/purpose[:\-\s]+([^\n]*)/i),
+                    raw: originalText.replace(/\n/g, " ")
+                };
+
+                // Fallback smart extraction
+                if (parsedData.budget === "Not Specified" && parsedData.type === "Not Specified") {
+                    let lines = originalText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                    
+                    if (lines.length >= 3) {
+                        parsedData.name = lines[0] || pushName;
+                        parsedData.budget = lines.find(l => /\d+\s*(k|lac|lakh|cr|crore)/i.test(l)) || lines[1] || "Not Specified";
+                        parsedData.type = lines.filter(l => /flat|falt|villa|plot|bhk|parking|apt/i.test(l)).join(', ') || lines[2] || "Not Specified";
+                        parsedData.purpose = lines.find(l => /buy|rent|invest/i.test(l)) || "Not Specified";
+                        parsedData.location = lines.find(l => 
+                            l !== lines[0] && !/\d/.test(l) && !/buy|rent|invest|flat|falt|villa|plot|bhk/i.test(l)
+                        ) || "Not Specified";
+                    }
+                }
+
+                // If we still didn't parse anything meaningful, just use the raw text and mark as "Detected from message"
+                if (parsedData.budget === "Not Specified" && parsedData.type === "Not Specified" && parsedData.location === "Not Specified") {
+                    parsedData.budget = "Please verify with client";
+                    parsedData.type = "Please verify with client";
+                    parsedData.location = "Please verify with client";
+                    parsedData.purpose = "Please verify with client";
+                }
+
+                const confirmMsg = `📋 *Please verify your details:*
 ━━━━━━━━━━━━━━━━━━━━━
-👤 *Full Name:* ${parsedData.name}
-💰 *Budget Range:* ${parsedData.budget}
-🏗️ *Property Type:* ${parsedData.type}
+👤 *Name:* ${parsedData.name}
+💰 *Budget:* ${parsedData.budget}
+🏗️ *Type:* ${parsedData.type}
 📍 *Location:* ${parsedData.location}
 🎯 *Purpose:* ${parsedData.purpose}
 ━━━━━━━━━━━━━━━━━━━━━
-*Is this correct?*
-(Reply with *Yes* to confirm, or *No* to fill again)`;
+*Are these details correct?*
+👉 Reply with *Yes* to confirm.
+👉 Reply with *No* to fill again.`;
 
-            userStates[sender] = { state: 'WAITING_CONFIRMATION', data: parsedData };
-            await sock.sendMessage(sender, { text: confirmMsg });
-            return;
+                userStates[sender] = { state: 'WAITING_CONFIRMATION', data: parsedData };
+                await sock.sendMessage(sender, { text: confirmMsg });
+                return;
+            }
+        } catch (error) {
+            console.error("[BOT ERROR] Error processing message:", error);
         }
     });
 }
 
-startBot().catch(err => console.log("Error: " + err));
+startBot().catch(err => console.error("[FATAL ERROR] Bot failed to start:", err));
+
