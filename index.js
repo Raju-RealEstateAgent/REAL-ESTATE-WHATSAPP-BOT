@@ -51,6 +51,7 @@ async function startBot() {
         version,
         auth: state,
         printQRInTerminal: false, 
+        markOnlineOnConnect: false,
         logger: pino({ level: 'silent' }),
         browser: ["Vijay Ratna", "Chrome", "1.0.0"]
     });
@@ -87,7 +88,7 @@ async function startBot() {
     sock.ev.on('messages.upsert', async (m) => {
         try {
             const msg = m.messages[0];
-            if (!msg.message || msg.key.fromMe || msg.key.remoteJid === 'status@broadcast') return;
+            if (!msg.message) return;
 
             const sender = msg.key.remoteJid;
             const pushName = msg.pushName || "Valued Client";
@@ -99,8 +100,8 @@ async function startBot() {
                        "";
             
             text = text.toLowerCase().trim();
-            console.log(`[DEBUG] Received from ${sender}: ${JSON.stringify(msg.message)} -> Extracted text: "${text}"`);
             
+            if (msg.key.fromMe || msg.key.remoteJid === 'status@broadcast') return;
             if (!text) return; // Ignore non-text messages
 
             // --- TRIGGER DETECTION ---
