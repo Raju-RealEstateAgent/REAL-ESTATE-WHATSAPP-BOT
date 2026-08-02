@@ -87,6 +87,7 @@ async function startBot() {
 
     sock.ev.on('messages.upsert', async (m) => {
         try {
+            if (m.type !== 'notify') return; // Only process new incoming messages
             const msg = m.messages[0];
             if (!msg.message) return;
 
@@ -136,20 +137,29 @@ To serve you better, please reply with your requirements in the following format
 ━━━━━━━━━━━━━━━━━━━━━
 📌 _Simply reply to this message with your details, and our team will contact you shortly!_`;
 
-                // 1. Send the premium image with the welcome form as a caption
-                await sock.sendMessage(sender, { 
-                    image: { url: "https://i.ibb.co/KzcnVvgZ/Picsart-26-04-25-21-45-06-694.jpg" },
-                    caption: welcomeForm 
-                });
+                try {
+                    // 1. Send the premium image with the welcome form as a caption
+                    await sock.sendMessage(sender, { 
+                        image: { url: "https://i.ibb.co/KzcnVvgZ/Picsart-26-04-25-21-45-06-694.jpg" },
+                        caption: welcomeForm 
+                    });
+                } catch (imgErr) {
+                    console.log("[BOT] Image send failed, sending text instead:", imgErr.message);
+                    await sock.sendMessage(sender, { text: welcomeForm });
+                }
 
-                // 2. Send a poll message which acts as interactive buttons (works perfectly on normal WhatsApp numbers)
-                await sock.sendMessage(sender, {
-                    poll: {
-                        name: '🎯 Quick Select (Optional):',
-                        values: ['Buy Property 🏡', 'Rent Property 🔑', 'List a Property 🤝', 'Investments 📈'],
-                        selectableCount: 1
-                    }
-                });
+                try {
+                    // 2. Send a poll message which acts as interactive buttons
+                    await sock.sendMessage(sender, {
+                        poll: {
+                            name: '🎯 Quick Select (Optional):',
+                            values: ['Buy Property 🏡', 'Rent Property 🔑', 'List a Property 🤝', 'Investments 📈'],
+                            selectableCount: 1
+                        }
+                    });
+                } catch (pollErr) {
+                    console.log("[BOT] Poll send failed:", pollErr.message);
+                }
                 
                 return;
             }
@@ -285,4 +295,5 @@ _${data.raw}_
 }
 
 startBot().catch(err => console.error("[FATAL ERROR] Bot failed to start:", err));
+
 
