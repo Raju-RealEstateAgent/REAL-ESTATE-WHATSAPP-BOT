@@ -27,7 +27,7 @@ app.listen(port, '0.0.0.0', () => console.log(`[SERVER] Express server listening
 // --- USER SESSION STATE ---
 const userStates = {};
 const adminNumber = "919822434060@s.whatsapp.net"; // Format with @s.whatsapp.net
-const BANNER_IMAGE = "<a href="https://i.ibb.co/LD2Y21N6/vijay-ratna-qr-poster.png";
+const BANNER_IMAGE = "https://i.ibb.co/LD2Y21N6/vijay-ratna-qr-poster.png;
 
 async function startBot() {
     console.log("[BOT] Fetching latest WhatsApp version...");
